@@ -9,6 +9,11 @@ from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView
 from drf_spectacular.views import SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
+from django.http import JsonResponse
+
+def health_check(request):
+    return JsonResponse({"status": "ok"})
+
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -23,7 +28,6 @@ urlpatterns = [
     path("users/", include("eco_backend.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
-    # ...
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]
@@ -43,6 +47,7 @@ urlpatterns += [
         SpectacularSwaggerView.as_view(url_name="api-schema"),
         name="api-docs",
     ),
+    path("api/health/", health_check, name="health-check")
 ]
 
 if settings.DEBUG:

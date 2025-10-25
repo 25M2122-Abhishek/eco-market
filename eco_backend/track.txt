@@ -1,0 +1,13 @@
+docker info
+
+docker-compose -f docker-compose.local.yml build
+
+docker-compose -f docker-compose.local.yml up
+
+docker ps
+
+docker-compose -f docker-compose.local.yml logs -f
+
+visit: http://localhost:8000/api/health/
+
+docker-compose -f docker-compose.local.yml down
