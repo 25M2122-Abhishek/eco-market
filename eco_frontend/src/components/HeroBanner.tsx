@@ -6,49 +6,49 @@ function HeroBanner() {
       <div className="relative container mx-auto px-4 py-20 md:py-32">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-block mb-6 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium">
-            🌱 Sustainable Shopping Made Easy
+            🌱 Your Gateway to Sustainable Shopping
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
             Discover Eco-Friendly Products
             <span className="block mt-2 bg-gradient-to-r from-yellow-300 to-green-300 bg-clip-text text-transparent">
-              From Trusted Sellers
+              Across Multiple Marketplaces
             </span>
           </h1>
 
           <p className="text-xl md:text-2xl mb-10 text-emerald-50 max-w-2xl mx-auto leading-relaxed">
-            Search across multiple sustainable marketplaces to find the perfect eco-conscious products.
-            Shop responsibly, live sustainably.
+            Search once, find everywhere. We aggregate sustainable products from trusted eco-friendly
+            sellers across the web—all in one place.
           </p>
 
           <div className="flex flex-wrap gap-4 justify-center items-center">
             <div className="flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur rounded-xl">
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
-                🌍
+                🔍
               </div>
               <div className="text-left">
-                <p className="text-sm text-emerald-100">Carbon Neutral</p>
-                <p className="font-bold">Shipping</p>
+                <p className="text-sm text-emerald-100">Multi-Store</p>
+                <p className="font-bold">Search</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur rounded-xl">
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
-                ♻️
+                ✓
               </div>
               <div className="text-left">
-                <p className="text-sm text-emerald-100">100% Recyclable</p>
-                <p className="font-bold">Packaging</p>
+                <p className="text-sm text-emerald-100">Verified</p>
+                <p className="font-bold">Eco-Sellers</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur rounded-xl">
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
-                🌿
+                🔗
               </div>
               <div className="text-left">
-                <p className="text-sm text-emerald-100">Ethically</p>
-                <p className="font-bold">Sourced</p>
+                <p className="text-sm text-emerald-100">Direct</p>
+                <p className="font-bold">Links</p>
               </div>
             </div>
           </div>
