@@ -1,58 +1,102 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from 'react'
+import type { FormEvent } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { login } from '../utils/api'
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+interface LoginProps {
+  onLogin: (token: string) => void
+}
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-  };
+function Login({ onLogin }: LoginProps) {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setError(null)
+
+    if (!username || !password) {
+      setError('Please fill in all fields')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const data = await login(username, password)
+      if (!data.token) throw new Error('Token not returned')
+      onLogin(data.token)
+      navigate('/')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white/90 backdrop-blur shadow-lg rounded-xl p-6 border border-green-100">
-        <h2 className="text-2xl font-bold text-green-800 mb-2">Login</h2>
-        <p className="text-sm text-gray-600 mb-6">
-          Access your eco-friendly marketplace account.
-        </p>
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12">
+      <div className="max-w-md w-full mx-4">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+          <p className="text-gray-600">Sign in to access your eco-friendly favorites</p>
+        </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 border border-emerald-100">
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
 
-          <div>
-            <label className="block font-medium mb-1">Email</label>
+          <div className="mb-5">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Username
+            </label>
             <input
-              type="email"
-              className="w-full px-3 py-2 border border-green-300 rounded-md focus:ring-2 focus:ring-green-400 focus:outline-none"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all outline-none"
+              placeholder="johndoe"
+              autoComplete="username"
             />
           </div>
 
-          <div>
-            <label className="block font-medium mb-1">Password</label>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Password
+            </label>
             <input
               type="password"
-              className="w-full px-3 py-2 border border-green-300 rounded-md focus:ring-2 focus:ring-green-400 focus:outline-none"
-              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all outline-none"
+              placeholder="••••••••"
+              autoComplete="current-password"
             />
           </div>
 
-          <button className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-md transition">
-            Login
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          >
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
-        </form>
 
-        <p className="mt-4 text-center text-sm">
-          New here?{" "}
-          <Link to="/signup" className="text-green-700 font-medium hover:underline">
-            Create an account
-          </Link>
-        </p>
+          <div className="mt-6 text-center text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link to="/signup" className="text-emerald-600 font-medium hover:text-emerald-700">
+              Sign up
+            </Link>
+          </div>
+        </form>
       </div>
     </div>
-  );
+  )
 }
+
+export default Login
