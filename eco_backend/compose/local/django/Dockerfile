@@ -20,18 +20,30 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   gettext \
   wait-for-it
 
-# Requirements are installed here to ensure they will be cached.
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    --mount=type=bind,source=uv.lock,target=uv.lock:rw \
-    uv sync --no-install-project
+# Install Chromium for Selenium
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    chromium \
+    chromium-driver \
+    fonts-liberation \
+    libnss3 \
+    libxss1 \
+    libgconf-2-4 \
+    libappindicator3-1 \
+    libasound2 \
+    xdg-utils \
+    && rm -rf /var/lib/apt/lists/*
 
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
+
+# Sync dependencies inside image (selenium will be installed)
+RUN --mount=type=cache,target=/root/.cache/uv uv sync
+
+# Copy application code
 COPY . ${APP_HOME}
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    --mount=type=bind,source=uv.lock,target=uv.lock:rw \
-    uv sync
+# (Optional: a second uv sync if your app has local changes)
+RUN --mount=type=cache,target=/root/.cache/uv uv sync
 
 # devcontainer dependencies and utils
 RUN apt-get update && apt-get install --no-install-recommends -y \

@@ -13,9 +13,33 @@ docker-compose -f docker-compose.local.yml logs -f
 docker-compose -f docker-compose.local.yml ps
 
 visit: http://localhost:8000/api/health/
+visit: http://localhost:8000/api/docs/
+visit: http://localhost:8000/admin/
 
 docker-compose -f docker-compose.local.yml down
 
 docker-compose -f docker-compose.local.yml exec django python manage.py migrate
 
+docker-compose -f docker-compose.local.yml exec django python manage.py makemigrations
+
+docker-compose -f docker-compose.local.yml exec django python manage.py showmigrations
+
 docker-compose -f docker-compose.local.yml exec django python manage.py createsuperuser
+
+docker-compose -f docker-compose.local.yml build --no-cache django
+
+docker-compose -f docker-compose.local.yml exec django python manage.py shell
+
+from eco_backend.products.scrapers.ecoconsious.personalcare import scrape_ecoconscious
+data = scrape_ecoconscious()
+len(data), data[:2]
+
+uv lock
+uv sync
+
+docker system prune -af
+
+from eco_backend.products.tasks import scrape_and_save_products
+scrape_and_save_products.delay()
+
+docker-compose -f docker-compose.local.yml up -d celeryworker celerybeat flower

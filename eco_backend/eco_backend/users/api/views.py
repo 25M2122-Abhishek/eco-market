@@ -1,4 +1,3 @@
-from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
 from rest_framework.mixins import RetrieveModelMixin
@@ -6,6 +5,8 @@ from rest_framework.mixins import UpdateModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework import generics, permissions
+from rest_framework.views import APIView
+from rest_framework import status, permissions
 
 from eco_backend.users.models import User
 
@@ -30,3 +31,16 @@ class UserSignupView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSignupSerializer
     permission_classes = [permissions.AllowAny]
+
+
+class LogoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        # Delete the user's token to log them out
+        try:
+            request.user.auth_token.delete()
+        except Exception:
+            pass  # in case token already deleted / missing
+
+        return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
