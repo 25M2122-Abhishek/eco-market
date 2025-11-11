@@ -1,18 +1,69 @@
-
-import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import type { Product } from '../types'
 
 interface FavoritesProps {
+  authToken: string | null
   favoritesHook: {
     favorites: Product[]
-    toggleFavorite: (product: Product) => void
-    isFavorite: (id: string) => boolean
+    loading: boolean
+    error: string | null
+    clearError: () => void
+    toggleFavorite: (product: Product) => Promise<boolean>
+    isFavorite: (id: number) => boolean
   }
 }
 
-function Favorites({ favoritesHook }: FavoritesProps) {
-  const { favorites, toggleFavorite, isFavorite } = favoritesHook
+function Favorites({ authToken, favoritesHook }: FavoritesProps) {
+  const { favorites, loading, error, clearError, toggleFavorite, isFavorite } = favoritesHook
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!authToken) {
+      navigate('/login')
+    }
+  }, [authToken, navigate])
+
+  if (!authToken) {
+    return null
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your favorites...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center max-w-md mx-4">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Failed to load favorites</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => {
+              clearError()
+              window.location.reload()
+            }}
+            className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   if (favorites.length === 0) {
     return (
@@ -28,8 +79,8 @@ function Favorites({ favoritesHook }: FavoritesProps) {
             Start exploring eco-friendly products and save your favorites for later!
           </p>
           <Link
-            to="/"
-            className="inline-block px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-medium rounded-lg hover:shadow-lg hover:scale-105 transition-all"
+            to="/products"
+            className="inline-block px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all"
           >
             Browse Products
           </Link>

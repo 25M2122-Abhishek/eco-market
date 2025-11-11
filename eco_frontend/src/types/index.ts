@@ -1,15 +1,23 @@
 export interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
-  currency: string
-  image: string
-  category: string
-  source: string
-  sourceUrl: string
-  ecoScore?: number
-  certifications?: string[]
+  id: number
+  title: string
+  brand: string | null
+  selling_price: string
+  cost_price: string | null
+  img_url: string
+  discount: string | null
+  rating: string | null
+  description: string | null
+  category: string | null
+  sub_category: string | null
+  seller: string
+  product_link: string
+}
+
+export interface UserFavorite {
+  id: number
+  product: Product
+  added_at: string
 }
 
 export interface AuthState {
@@ -23,8 +31,16 @@ export interface User {
 }
 
 export interface SearchFilters {
+  brand?: string
   category?: string
-  minPrice?: number
-  maxPrice?: number
-  certifications?: string[]
+  sub_category?: string
+  seller?: string
+  ordering?: string
+}
+
+export interface ProductsResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: Product[]
 }

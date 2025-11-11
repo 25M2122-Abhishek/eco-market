@@ -1,52 +1,94 @@
-import { useState, useEffect } from 'react'
-import type { Product } from '../types'
+import { useState, useEffect, useCallback } from 'react'
+import type { Product, UserFavorite } from '../types'
+import { getUserFavorites, addToFavorites, removeFromFavorites } from '../utils/api'
 
-export function useFavorites() {
-  const [favorites, setFavorites] = useState<Product[]>([])
+export function useFavorites(token: string | null) {
+  const [favorites, setFavorites] = useState<UserFavorite[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadFavorites = useCallback(async () => {
+    if (!token) {
+      setFavorites([])
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await getUserFavorites(token)
+      setFavorites(Array.isArray(data) ? data : [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load favorites')
+      setFavorites([])
+    } finally {
+      setLoading(false)
+    }
+  }, [token])
 
   useEffect(() => {
-    const stored = localStorage.getItem('eco_favorites')
-    if (stored) {
-      try {
-        setFavorites(JSON.parse(stored))
-      } catch (error) {
-        console.error('Failed to parse favorites:', error)
-      }
+    loadFavorites()
+  }, [loadFavorites])
+
+  const addFavorite = async (product: Product) => {
+    if (!token) {
+      setError('Please login to add favorites')
+      return false
     }
-  }, [])
 
-  const saveFavorites = (newFavorites: Product[]) => {
-    setFavorites(newFavorites)
-    localStorage.setItem('eco_favorites', JSON.stringify(newFavorites))
-  }
-
-  const addFavorite = (product: Product) => {
-    if (!favorites.find(p => p.id === product.id)) {
-      saveFavorites([...favorites, product])
+    try {
+      const newFavorite = await addToFavorites(product.id, token)
+      setFavorites(prev => [...prev, newFavorite])
+      return true
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add favorite')
+      return false
     }
   }
 
-  const removeFavorite = (productId: string) => {
-    saveFavorites(favorites.filter(p => p.id !== productId))
+  const removeFavorite = async (productId: number) => {
+    if (!token) {
+      setError('Please login to manage favorites')
+      return false
+    }
+
+    const favorite = favorites.find(f => f.product.id === productId)
+    if (!favorite) return false
+
+    try {
+      await removeFromFavorites(favorite.id, token)
+      setFavorites(prev => prev.filter(f => f.id !== favorite.id))
+      return true
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove favorite')
+      return false
+    }
   }
 
-  const isFavorite = (productId: string) => {
-    return favorites.some(p => p.id === productId)
+  const isFavorite = (productId: number) => {
+    return favorites.some(f => f.product.id === productId)
   }
 
-  const toggleFavorite = (product: Product) => {
+  const toggleFavorite = async (product: Product) => {
     if (isFavorite(product.id)) {
-      removeFavorite(product.id)
+      return await removeFavorite(product.id)
     } else {
-      addFavorite(product)
+      return await addFavorite(product)
     }
   }
+
+  const clearError = () => setError(null)
 
   return {
-    favorites,
+    favorites: favorites.map(f => f.product),
+    userFavorites: favorites,
+    loading,
+    error,
+    clearError,
     addFavorite,
     removeFavorite,
     isFavorite,
-    toggleFavorite
+    toggleFavorite,
+    refreshFavorites: loadFavorites
   }
 }

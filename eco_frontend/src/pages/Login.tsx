@@ -28,13 +28,14 @@ function Login({ onLogin }: LoginProps) {
       const data = await login(username, password)
       if (!data.token) throw new Error('Token not returned')
       onLogin(data.token)
-      navigate('/')
+      window.location.href = '/' // Force full page reload to ensure token is loaded
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {
       setLoading(false)
     }
   }
+
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12">

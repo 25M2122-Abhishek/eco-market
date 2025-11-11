@@ -40,6 +40,9 @@ function Header({ auth, onLogout, onSearch, favoritesCount }: HeaderProps) {
             <Link to="/" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               Home
             </Link>
+            <Link to="/products" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+              Products
+            </Link>
             <Link to="/about" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               About
             </Link>
@@ -57,6 +60,7 @@ function Header({ auth, onLogout, onSearch, favoritesCount }: HeaderProps) {
               )}
             </Link>
           </nav>
+
 
           <div className="flex items-center gap-3">
             {auth.token ? (
@@ -103,6 +107,9 @@ function Header({ auth, onLogout, onSearch, favoritesCount }: HeaderProps) {
             <Link to="/" className="block px-4 py-2 text-gray-700 hover:bg-emerald-50 rounded-lg">
               Home
             </Link>
+            <Link to="/products" className="block px-4 py-2 text-gray-700 hover:bg-emerald-50 rounded-lg">
+              Products
+            </Link>
             <Link to="/about" className="block px-4 py-2 text-gray-700 hover:bg-emerald-50 rounded-lg">
               About
             </Link>
@@ -111,6 +118,7 @@ function Header({ auth, onLogout, onSearch, favoritesCount }: HeaderProps) {
             </Link>
           </div>
         )}
+
       </div>
     </header>
   )
