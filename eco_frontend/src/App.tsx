@@ -35,17 +35,27 @@ function App() {
       setSearchResults([])
       return
     }
-
     setIsSearching(true)
     try {
       const { searchProducts } = await import('./utils/api')
       const results = await searchProducts(query, auth.token)
       setSearchResults(results.products || [])
-    } catch (error) {
-      console.error('Search failed:', error)
+    } catch {
       setSearchResults([])
     } finally {
       setIsSearching(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    const currentToken = auth.token
+    try {
+      const { logout } = await import('./utils/api')
+      await logout(currentToken)
+      console.log('Logged out successfully')
+    } catch {
+    } finally {
+      saveToken(null)
     }
   }
 
@@ -53,7 +63,7 @@ function App() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
       <Header
         auth={auth}
-        onLogout={() => saveToken(null)}
+        onLogout={handleLogout}
         onSearch={handleSearch}
         favoritesCount={favoritesHook.favorites.length}
       />

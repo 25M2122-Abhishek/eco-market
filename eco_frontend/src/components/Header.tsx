@@ -14,8 +14,8 @@ function Header({ auth, onLogout, onSearch, favoritesCount }: HeaderProps) {
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const handleLogout = () => {
-    onLogout()
+  const handleLogoutClick = async () => {
+    await onLogout()
     navigate('/')
   }
 
@@ -61,7 +61,7 @@ function Header({ auth, onLogout, onSearch, favoritesCount }: HeaderProps) {
           <div className="flex items-center gap-3">
             {auth.token ? (
               <button
-                onClick={handleLogout}
+                onClick={handleLogoutClick}
                 className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all"
               >
                 Logout

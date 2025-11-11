@@ -19,8 +19,9 @@ async function request(endpoint: string, options: RequestOptions = {}) {
     ...fetchOptions,
     headers: {
       ...headers,
-      ...(fetchOptions.headers as Record<string, string>)
-    }
+      ...(fetchOptions.headers as Record<string, string> | undefined),
+    },
+    // credentials: 'include',
   })
 
   if (!response.ok) {
@@ -28,7 +29,10 @@ async function request(endpoint: string, options: RequestOptions = {}) {
     throw new Error(error.detail || error.error || 'Request failed')
   }
 
-  return response.json()
+  // logout returns 
+  return response
+    .json()
+    .catch(() => ({}))
 }
 
 export async function searchProducts(query: string, token?: string | null) {
@@ -46,5 +50,12 @@ export async function signup(username: string, email: string, password: string) 
   return request('/auth/signup/', {
     method: 'POST',
     body: JSON.stringify({ username, email, password })
+  })
+}
+
+export async function logout(token: string | null) {
+  return request('/auth/logout/', {
+    method: 'POST',
+    token
   })
 }
