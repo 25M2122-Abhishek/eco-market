@@ -37,6 +37,10 @@ app.conf.beat_schedule = {
         "schedule": crontab(hour=0, minute=30),
         "args": ("ecoyaan_personalcare",),
     },
+    "classify_title_for_category_sub_category": {
+        "task": "eco_backend.products.tasks.classify_product_title_task",
+        "schedule": crontab(hour=1, minute=00),
+    }
 }
 
 

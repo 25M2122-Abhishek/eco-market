@@ -1,6 +1,7 @@
 from celery import shared_task
 from eco_backend.products.models import Product
 from eco_backend.products.scrapers import SCRAPERS
+from eco_backend.products.utils.classify_title import classify_title
 
 @shared_task(bind=True)
 def scrape_and_save_products(self, scraper_name: str):
@@ -33,3 +34,18 @@ def scrape_and_save_products(self, scraper_name: str):
                 continue
             
     return f"{len(products_data)} products processed for {scraper_name}."
+
+@shared_task(bind=True)
+def classify_product_title_task(self):
+
+    products = Product.objects.all()
+    for product in products:
+        try:
+            result = classify_title(product.title)
+            product.category = result.get("category")
+            product.sub_category = result.get("sub_category")
+            product.save()
+        except:
+            continue
+
+    return f"Category and sub_category added in all the products."
