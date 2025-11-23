@@ -19,19 +19,37 @@ function Products({ authToken, favoritesHook }: ProductsProps) {
   const [totalCount, setTotalCount] = useState(0)
 
   const searchQuery = searchParams.get('search') || ''
-  const [filters, setFilters] = useState({
-    category: searchParams.get('category') || '',
-    brand: searchParams.get('brand') || '',
-    seller: searchParams.get('seller') || '',
-    ordering: searchParams.get('ordering') || '-rating'
-  })
+  const [ordering, setOrdering] = useState(searchParams.get('ordering') || '-selling_price')
+
+  // Extract numeric price from string like "₹295" or "$99"
+  const extractPrice = (priceString: string): number => {
+    if (!priceString || typeof priceString !== 'string') return 0
+    const cleaned = priceString.replace(/[^\d.]/g, '')
+    return parseFloat(cleaned) || 0
+  }
+
+  // Sort products by price
+  const sortProductsByPrice = (productsToSort: Product[], sortOrder: string): Product[] => {
+    const sorted = [...productsToSort].sort((a, b) => {
+      const priceA = extractPrice(a.selling_price)
+      const priceB = extractPrice(b.selling_price)
+
+      if (sortOrder === 'selling_price') {
+        // Low to High
+        return priceA - priceB
+      } else {
+        // High to Low
+        return priceB - priceA
+      }
+    })
+    return sorted
+  }
 
   // Validate and sanitize product data
   const sanitizeProducts = (rawProducts: any[]): Product[] => {
     if (!Array.isArray(rawProducts)) return []
 
     return rawProducts.filter(p => {
-      // Must have at least id and title
       return p && typeof p.id !== 'undefined' && p.title
     }).map(p => ({
       id: p.id,
@@ -56,13 +74,12 @@ function Products({ authToken, favoritesHook }: ProductsProps) {
       setError(null)
       try {
         const { searchProducts } = await import('../utils/api')
+
+        // Don't send ordering to API, we'll sort on frontend
         const response = await searchProducts(
           searchQuery || undefined,
           {
-            category: filters.category || undefined,
-            brand: filters.brand || undefined,
-            seller: filters.seller || undefined,
-            ordering: filters.ordering
+            ordering: undefined
           },
           authToken
         )
@@ -74,8 +91,11 @@ function Products({ authToken, favoritesHook }: ProductsProps) {
           productsArray = sanitizeProducts(response.results)
         }
 
-        setProducts(productsArray)
-        setTotalCount(response.count || productsArray.length)
+        // Sort on frontend
+        const sortedProducts = sortProductsByPrice(productsArray, ordering)
+
+        setProducts(sortedProducts)
+        setTotalCount(response.count || sortedProducts.length)
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load products'
         console.error('Failed to load products:', errorMessage)
@@ -93,31 +113,18 @@ function Products({ authToken, favoritesHook }: ProductsProps) {
     }
 
     loadProducts()
-  }, [searchQuery, filters, authToken])
+  }, [searchQuery, ordering, authToken])
 
-  const updateFilters = (newFilters: typeof filters) => {
-    setFilters(newFilters)
+  const handleOrderingChange = (newOrdering: string) => {
+    setOrdering(newOrdering)
     const params = new URLSearchParams()
     if (searchQuery) params.set('search', searchQuery)
-    if (newFilters.category) params.set('category', newFilters.category)
-    if (newFilters.brand) params.set('brand', newFilters.brand)
-    if (newFilters.seller) params.set('seller', newFilters.seller)
-    if (newFilters.ordering) params.set('ordering', newFilters.ordering)
-    setSearchParams(params)
-  }
-
-  const clearFilters = () => {
-    const newFilters = { category: '', brand: '', seller: '', ordering: '-rating' }
-    setFilters(newFilters)
-    const params = new URLSearchParams()
-    if (searchQuery) params.set('search', searchQuery)
-    params.set('ordering', '-rating')
+    params.set('ordering', newOrdering)
     setSearchParams(params)
   }
 
   const clearSearch = () => {
-    setSearchParams({})
-    setFilters({ category: '', brand: '', seller: '', ordering: '-rating' })
+    setSearchParams({ ordering })
   }
 
   if (error && error.includes('login')) {
@@ -160,79 +167,33 @@ function Products({ authToken, favoritesHook }: ProductsProps) {
             {searchQuery ? `Search Results for "${searchQuery}"` : 'All Products'}
           </h1>
           <p className="text-gray-600">
-            {loading ? 'Loading...' : error ? 'Error loading products' : `${totalCount} products found`}
+            {loading ? 'Loading...' : error ? 'Error loading products' : (
+              <>
+                {totalCount} products found
+                {ordering === 'selling_price' && ' (Price: Low to High)'}
+                {ordering === '-selling_price' && ' (Price: High to Low)'}
+              </>
+            )}
           </p>
         </div>
 
+        {/* Price Filter Only */}
         <div className="mb-8 bg-white rounded-xl p-6 shadow-sm border border-emerald-100">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sort By
+          <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-gray-700">
+                Sort by Price:
               </label>
               <select
-                value={filters.ordering}
-                onChange={(e) => updateFilters({ ...filters, ordering: e.target.value })}
-                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all outline-none"
+                value={ordering}
+                onChange={(e) => handleOrderingChange(e.target.value)}
+                className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all outline-none"
               >
-                <option value="-rating">Highest Rated</option>
-                <option value="rating">Lowest Rated</option>
-                <option value="selling_price">Price: Low to High</option>
-                <option value="-selling_price">Price: High to Low</option>
-                <option value="title">Name: A to Z</option>
-                <option value="-title">Name: Z to A</option>
+                <option value="selling_price">Low to High</option>
+                <option value="-selling_price">High to Low</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
-              <input
-                type="text"
-                value={filters.category}
-                onChange={(e) => updateFilters({ ...filters, category: e.target.value })}
-                placeholder="Filter by category"
-                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Brand
-              </label>
-              <input
-                type="text"
-                value={filters.brand}
-                onChange={(e) => updateFilters({ ...filters, brand: e.target.value })}
-                placeholder="Filter by brand"
-                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Seller
-              </label>
-              <input
-                type="text"
-                value={filters.seller}
-                onChange={(e) => updateFilters({ ...filters, seller: e.target.value })}
-                placeholder="Filter by seller"
-                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="mt-4 flex gap-3">
-            {(filters.category || filters.brand || filters.seller) && (
-              <button
-                onClick={clearFilters}
-                className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-              >
-                Clear Filters
-              </button>
-            )}
             {searchQuery && (
               <button
                 onClick={clearSearch}
@@ -244,12 +205,14 @@ function Products({ authToken, favoritesHook }: ProductsProps) {
           </div>
         </div>
 
+        {/* Error State */}
         {error && !error.includes('login') && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
             {error}
           </div>
         )}
 
+        {/* Products Grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(12)].map((_, i) => (
@@ -281,14 +244,11 @@ function Products({ authToken, favoritesHook }: ProductsProps) {
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">No products found</h3>
             <p className="text-gray-600 mb-6">
-              {searchQuery ? 'Try different search terms or adjust your filters' : 'Try adjusting your filters'}
+              {searchQuery ? 'Try different search terms' : 'No products available'}
             </p>
-            {(searchQuery || filters.category || filters.brand || filters.seller) && (
+            {searchQuery && (
               <button
-                onClick={() => {
-                  clearSearch()
-                  clearFilters()
-                }}
+                onClick={clearSearch}
                 className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all"
               >
                 View All Products
