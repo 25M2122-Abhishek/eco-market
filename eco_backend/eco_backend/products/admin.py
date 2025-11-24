@@ -13,7 +13,7 @@ if getattr(settings, "DJANGO_ADMIN_FORCE_ALLAUTH", False):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("title", "selling_price", "seller", "scraped_at")
+    list_display = ("title", "selling_price", "seller", "scraped_at", "img_url", "product_link", "category", "sub_category")
     search_fields = ("title", "product_link", "seller")
     list_filter = ("seller",)
 

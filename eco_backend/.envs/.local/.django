@@ -16,4 +16,4 @@ CELERY_FLOWER_PASSWORD=debug
 
 # sha256:0fe2e73741e699a9f6de210332cf264f11af895dfc87ee42ba054ef1c617468b
 
-NV_API_KEY=your_real_key_here
+NV_API_KEY=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

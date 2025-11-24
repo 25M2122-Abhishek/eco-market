@@ -2,6 +2,9 @@ from celery import shared_task
 from eco_backend.products.models import Product
 from eco_backend.products.scrapers import SCRAPERS
 from eco_backend.products.utils.classify_title import classify_title
+import logging
+logger = logging.getLogger(__name__)
+
 
 @shared_task(bind=True)
 def scrape_and_save_products(self, scraper_name: str):
@@ -45,7 +48,8 @@ def classify_product_title_task(self):
             product.category = result.get("category")
             product.sub_category = result.get("sub_category")
             product.save()
-        except:
+        except Exception as e:
+            logger.error(f"Error processing {e}")
             continue
 
     return f"Category and sub_category added in all the products."
