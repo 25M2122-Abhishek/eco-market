@@ -5,7 +5,7 @@ from .serializers import ProductSerializer, UserFavoriteSerializer
 
 
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.filter(selling_price__isnull=False)
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['brand', 'category', 'sub_category', 'seller']

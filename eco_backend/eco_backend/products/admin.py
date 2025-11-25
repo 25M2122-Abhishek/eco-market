@@ -16,6 +16,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ("title", "selling_price", "seller", "scraped_at", "img_url", "product_link", "category", "sub_category")
     search_fields = ("title", "product_link", "seller")
     list_filter = ("seller",)
+    sortable_by = ("selling_price",)
 
 @admin.register(UserFavorite)
 class UserFavouriteAdmin(admin.ModelAdmin):
